@@ -230,7 +230,7 @@ class MultiAgentEnv(gym.Env):
             for entity in self.world.entities:
                 geom = rendering.make_circle(entity.size)
                 xform = rendering.Transform()
-                if 'agent' in entity.name:
+                if 'agent' in entity.name and len(entity.color) == 3:
                     geom.set_color(*entity.color, alpha=0.5)
                 else:
                     geom.set_color(*entity.color)
