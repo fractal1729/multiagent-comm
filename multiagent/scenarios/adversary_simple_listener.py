@@ -55,7 +55,7 @@ class Scenario(BaseScenario):
         world.agents[0].goal_b = mygoal
         # random properties for agents
         for i, agent in enumerate(world.agents):
-            agent.color = np.array([0.25,0.25,0.25])               
+            agent.color = np.array([0.25,0.25,0.25])
         # random properties for landmarks
         world.landmarks[0].color = np.array([0.65,0.15,0.15])
         world.landmarks[1].color = np.array([0.15,0.65,0.15])
