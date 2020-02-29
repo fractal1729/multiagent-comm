@@ -1,0 +1,9 @@
+# Train Command
+python train.py --scenario [ENV_NAME]
+# Visualize
+python train.py --scenario [ENV_NAME] --display
+
+# Example Train Command
+python train.py --scenario simple
+# Example Visualize Command
+python train.py --scenario simple --display
