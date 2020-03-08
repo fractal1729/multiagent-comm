@@ -8,7 +8,7 @@ class Scenario(BaseScenario):
         # set any world properties first
         world.dim_c = 3
         num_landmarks = 3
-        world.collaborative = True
+        # world.collaborative = True
         # add agents
         world.agents = [Agent() for i in range(3)]
         for i, agent in enumerate(world.agents):
@@ -62,7 +62,7 @@ class Scenario(BaseScenario):
         world.landmarks[2].color = np.array([0.15,0.15,0.65])
         # special colors for goals
         world.agents[0].goal_a.color = world.agents[0].goal_b.color + np.array([0.45, 0.45, 0.45])
-        world.agents[2].color = np.array([0,0,0])
+        world.agents[2].color = np.array([0.65,0,0.65])
 
         world.agents[0].key = np.random.choice(world.landmarks).color
 
@@ -82,21 +82,19 @@ class Scenario(BaseScenario):
     def reward(self, agent, world):
         if agent.adversary:
             return self.adversary_reward(agent, world)
-        elif agent.speaker:
-            return self.speaker_reward(agent, world)
+        #elif agent.speaker:
+        #    return self.speaker_reward(agent, world)
         else:
-            return self.agent_reward(agent, world)
+            return self.speaker_reward(agent, world)
 
     def agent_reward(self, agent, world):
         # squared distance from listener to landmark
         good_speaker = world.agents[0]
-        adverse_listener = world.agents[2]
         dist2 = np.sum(np.square(good_speaker.goal_a.state.p_pos - good_speaker.goal_b.state.p_pos))
-        adv_dist2 = np.sum(np.square(adverse_listener.state.p_pos - good_speaker.goal_b.state.p_pos))
         return -dist2
 
     def speaker_reward(self, agent, world):
-        # squared distance from listener to landmark
+        # agent_reward - adversary_reward
         good_speaker = world.agents[0]
         adverse_listener = world.agents[2]
         dist2 = np.sum(np.square(good_speaker.goal_a.state.p_pos - good_speaker.goal_b.state.p_pos))
@@ -104,7 +102,7 @@ class Scenario(BaseScenario):
         return adv_dist2-dist2
 
     def adversary_reward(self, agent, world):
-        # squared distance from listener to landmark
+        # squared distance from adversary to landmark
         good_speaker = world.agents[0]
         adverse_listener = world.agents[2]
         adv_dist2 = np.sum(np.square(adverse_listener.state.p_pos - good_speaker.goal_b.state.p_pos))
@@ -137,7 +135,7 @@ class Scenario(BaseScenario):
 
         # speaker
         if not agent.movable:
-            return np.concatenate([goal_color])
+            return np.concatenate([goal_color] + [key])
         # listener
         if agent.silent and not agent.adversary:
             return np.concatenate([agent.state.p_vel] + entity_pos + [key] + comm)
