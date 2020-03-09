@@ -1,6 +1,7 @@
 import os
 import argparse
 import numpy as np
+import matplotlib.pyplot as plt
 import tensorflow as tf
 import time
 import pickle
@@ -179,17 +180,26 @@ def train(arglist):
                 t_start = time.time()
                 # Keep track of final episode reward
                 final_ep_rewards.append(np.mean(episode_rewards[-arglist.save_rate:]))
-                for rew in agent_rewards:
-                    final_ep_ag_rewards.append(np.mean(rew[-arglist.save_rate:]))
+                final_ep_ag_rewards.append([np.mean(rew[-arglist.save_rate:]) for rew in agent_rewards])
 
             # saves final episode reward for plotting training curve later
             if len(episode_rewards) > arglist.num_episodes:
                 rew_file_name = arglist.plots_dir + arglist.scenario + '-' + arglist.exp_name + '_rewards.pkl'
                 with open(rew_file_name, 'wb') as fp:
                     pickle.dump(final_ep_rewards, fp)
+                plt.plot(np.asarray(final_ep_rewards))
+                plt.title(arglist.scenario + '-' + arglist.exp_name + " episode reward")
+                plt.savefig(rew_file_name[:-4]+'.png')
+                plt.clf()
+
                 agrew_file_name = arglist.plots_dir + arglist.scenario + '-' + arglist.exp_name + '_agrewards.pkl'
                 with open(agrew_file_name, 'wb') as fp:
                     pickle.dump(final_ep_ag_rewards, fp)
+                final_ep_ag_rewards = np.asarray(final_ep_ag_rewards)
+                for i in range(final_ep_ag_rewards.shape[1]):
+                    plt.plot(final_ep_ag_rewards[:,i])
+                plt.title(arglist.scenario + '-' + arglist.exp_name + " per agent reward")
+                plt.savefig(agrew_file_name[:-4]+'.png')
                 print('...Finished total of {} episodes.'.format(len(episode_rewards)))
                 break
 

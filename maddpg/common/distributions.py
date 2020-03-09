@@ -52,7 +52,7 @@ class CategoricalPdType(PdType):
     def sample_shape(self):
         return []
     def sample_dtype(self):
-        return tf.int32
+        return tf.float32
 
 class SoftCategoricalPdType(PdType):
     def __init__(self, ncat):
