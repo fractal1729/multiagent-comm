@@ -50,7 +50,7 @@ class CategoricalPdType(PdType):
     def param_shape(self):
         return [self.ncat]
     def sample_shape(self):
-        return []
+        return [self.ncat]
     def sample_dtype(self):
         return tf.float32
 
@@ -59,6 +59,18 @@ class SoftCategoricalPdType(PdType):
         self.ncat = ncat
     def pdclass(self):
         return SoftCategoricalPd
+    def param_shape(self):
+        return [self.ncat]
+    def sample_shape(self):
+        return [self.ncat]
+    def sample_dtype(self):
+        return tf.float32
+
+class SoftmaxCategoricalPdType(PdType):
+    def __init__(self, ncat):
+        self.ncat = ncat
+    def pdclass(self):
+        return SoftmaxCategoricalPd
     def param_shape(self):
         return [self.ncat]
     def sample_shape(self):
@@ -171,6 +183,8 @@ class CategoricalPd(Pd):
         return U.sum(p0 * (tf.log(z0) - a0), axis=1)
     def sample(self):
         u = tf.random_uniform(tf.shape(self.logits))
+        gumbel = self.logits - tf.log(-tf.log(u))
+        # return tf.one_hot(tf.argmax(gumbel, -1), gumbel.shape[1])
         return U.argmax(self.logits - tf.log(-tf.log(u)), axis=1)
     @classmethod
     def fromflat(cls, flat):
@@ -205,7 +219,37 @@ class SoftCategoricalPd(Pd):
         return U.softmax(self.logits - tf.log(-tf.log(u)), axis=-1)  
     @classmethod
     def fromflat(cls, flat):
-        return cls(flat)        
+        return cls(flat)    
+
+class SoftmaxCategoricalPd(Pd):
+    def __init__(self, logits):
+        self.logits = logits
+    def flatparam(self):
+        return self.logits
+    def mode(self):
+        return U.softmax(self.logits, axis=-1)
+    def logp(self, x):
+        return -tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=x)
+    # def kl(self, other):
+    #     a0 = self.logits - U.max(self.logits, axis=1, keepdims=True)
+    #     a1 = other.logits - U.max(other.logits, axis=1, keepdims=True)
+    #     ea0 = tf.exp(a0)
+    #     ea1 = tf.exp(a1)
+    #     z0 = U.sum(ea0, axis=1, keepdims=True)
+    #     z1 = U.sum(ea1, axis=1, keepdims=True)
+    #     p0 = ea0 / z0
+    #     return U.sum(p0 * (a0 - tf.log(z0) - a1 + tf.log(z1)), axis=1)
+    # def entropy(self):
+    #     a0 = self.logits - U.max(self.logits, axis=1, keepdims=True)
+    #     ea0 = tf.exp(a0)
+    #     z0 = U.sum(ea0, axis=1, keepdims=True)
+    #     p0 = ea0 / z0
+    #     return U.sum(p0 * (tf.log(z0) - a0), axis=1)
+    def sample(self):
+        return U.softmax(self.logits, axis=-1)  
+    @classmethod
+    def fromflat(cls, flat):
+        return cls(flat)       
 
 class MultiCategoricalPd(Pd):
     def __init__(self, low, high, flat):
@@ -313,8 +357,9 @@ def make_pdtype(ac_space):
         assert len(ac_space.shape) == 1
         return DiagGaussianPdType(ac_space.shape[0])
     elif isinstance(ac_space, spaces.Discrete):
-        # return CategoricalPdType(ac_space.n)
-        return SoftCategoricalPdType(ac_space.n)
+        return CategoricalPdType(ac_space.n)
+        # return SoftCategoricalPdType(ac_space.n)
+        # return SoftmaxCategoricalPdType(ac_space.n)
     elif isinstance(ac_space, MultiDiscrete):
         #return MultiCategoricalPdType(ac_space.low, ac_space.high)
         return SoftMultiCategoricalPdType(ac_space.low, ac_space.high)
