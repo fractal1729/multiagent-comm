@@ -184,8 +184,8 @@ class CategoricalPd(Pd):
     def sample(self):
         u = tf.random_uniform(tf.shape(self.logits))
         gumbel = self.logits - tf.log(-tf.log(u))
-        # return tf.one_hot(tf.argmax(gumbel, -1), gumbel.shape[1])
-        return U.argmax(self.logits - tf.log(-tf.log(u)), axis=1)
+        return tf.one_hot(tf.argmax(gumbel, -1), gumbel.shape[1])
+        # return U.argmax(self.logits - tf.log(-tf.log(u)), axis=1)
     @classmethod
     def fromflat(cls, flat):
         return cls(flat)
@@ -357,9 +357,9 @@ def make_pdtype(ac_space):
         assert len(ac_space.shape) == 1
         return DiagGaussianPdType(ac_space.shape[0])
     elif isinstance(ac_space, spaces.Discrete):
-        return CategoricalPdType(ac_space.n)
+        # return CategoricalPdType(ac_space.n)
         # return SoftCategoricalPdType(ac_space.n)
-        # return SoftmaxCategoricalPdType(ac_space.n)
+        return SoftmaxCategoricalPdType(ac_space.n)
     elif isinstance(ac_space, MultiDiscrete):
         #return MultiCategoricalPdType(ac_space.low, ac_space.high)
         return SoftMultiCategoricalPdType(ac_space.low, ac_space.high)
