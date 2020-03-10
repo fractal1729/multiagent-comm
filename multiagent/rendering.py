@@ -83,6 +83,9 @@ class Viewer(object):
     def add_onetime(self, geom):
         self.onetime_geoms.append(geom)
 
+    def set_comm(self, comm):
+        self.comm = str(comm)
+
     def render(self, return_rgb_array=False):
         glClearColor(1,1,1,1)
         self.window.clear()
@@ -94,6 +97,14 @@ class Viewer(object):
         for geom in self.onetime_geoms:
             geom.render()
         self.transform.disable()
+        label = pyglet.text.Label('Comm: '+self.comm,
+                              font_name='Times New Roman',
+                              font_size=45,
+                              color=(0,0,0,255),
+                              #color=(40,150,240,200),
+                              x=120, y=self.window.height-30,
+                              anchor_x='center', anchor_y='center')
+        label.draw() 
         arr = None
         if return_rgb_array:
             buffer = pyglet.image.get_buffer_manager().get_color_buffer()

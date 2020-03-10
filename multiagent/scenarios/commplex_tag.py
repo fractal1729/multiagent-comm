@@ -13,9 +13,9 @@ class CryptoAgent(Agent):
 
 class Scenario(BaseScenario):
 
-    def __init__(self, adversary_vision='1', comm_setting='2', num_good_agents='1', num_adversaries='4', num_comms='4'):
+    def __init__(self, adversary_blindness='1', comm_setting='2', num_good_agents='1', num_adversaries='4', num_comms='4'):
         super(Scenario).__init__()
-        self.adversary_vision = int(adversary_vision)
+        self.adversary_blindness = int(adversary_blindness)
         self.comm_setting = int(comm_setting)
         self.num_good_agents = int(num_good_agents)
         self.num_adversaries = int(num_adversaries)
@@ -24,11 +24,12 @@ class Scenario(BaseScenario):
 
     def make_world(self):
         """
-        adversary_vision: 0: can't see prey or other predators, 1: can't see prey, 2: can see everything
+        adversary_blindness: 0: can see everything, 1: can't see prey, 2: can't see prey or other predators
         comm_setting: 0: no comms, 1: everyone can see comms, 2: only predators can see comms
         """
         world = World()
         # set any world properties first
+        world.comms_enabled = self.comm_setting > 0
         world.dim_c = self.num_comms
         # world.damping = 1
         num_agents = self.num_adversaries + self.num_good_agents
@@ -280,11 +281,11 @@ class Scenario(BaseScenario):
         key_comm = [key] + comm if self.comm_setting > 0 else []
 
         if agent.adversary and not agent.leader:
-            if self.adversary_vision == 0:
+            if self.adversary_blindness == 0:
                 return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel + key_comm)
-            elif self.adversary_vision == 1:
+            elif self.adversary_blindness == 1:
                 return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_adversary_pos + key_comm)
-            elif self.adversary_vision == 2:
+            elif self.adversary_blindness == 2:
                 return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + key_comm)
         if agent.leader:
             return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + [key] + entity_pos + other_pos + other_vel + key_comm)
