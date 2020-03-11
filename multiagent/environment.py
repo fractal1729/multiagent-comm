@@ -203,7 +203,6 @@ class MultiAgentEnv(gym.Env):
             alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             message = ''
             for agent in self.world.agents:
-                comm = []
                 for other in self.world.agents:
                     if other is agent: continue
                     if np.all(other.state.c == 0):
@@ -268,6 +267,14 @@ class MultiAgentEnv(gym.Env):
             results.append(self.viewers[i].render(return_rgb_array = mode=='rgb_array'))
 
         return results
+
+    def get_comm_index(self):
+        for agent in self.world.agents:
+            for other in self.world.agents:
+                if other is agent: continue
+                if not np.all(other.state.c == 0):
+                    return np.argmax(other.state.c)
+        return -1
 
     # create receptor field locations in local coordinate frame
     def _make_receptor_locations(self, agent):
