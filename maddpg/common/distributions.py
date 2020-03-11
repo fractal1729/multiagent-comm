@@ -358,8 +358,8 @@ def make_pdtype(ac_space):
         return DiagGaussianPdType(ac_space.shape[0])
     elif isinstance(ac_space, spaces.Discrete):
         # return CategoricalPdType(ac_space.n)
-        # return SoftCategoricalPdType(ac_space.n)
-        return SoftmaxCategoricalPdType(ac_space.n)
+        return SoftCategoricalPdType(ac_space.n)
+        # return SoftmaxCategoricalPdType(ac_space.n)
     elif isinstance(ac_space, MultiDiscrete):
         #return MultiCategoricalPdType(ac_space.low, ac_space.high)
         return SoftMultiCategoricalPdType(ac_space.low, ac_space.high)
