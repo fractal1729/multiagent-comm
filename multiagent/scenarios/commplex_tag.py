@@ -1,8 +1,10 @@
+# modified from simple_world_comm.py
+# the terms "predator" and "adversary" are used interchangeably
+
 import numpy as np
 from multiagent.core import World, Agent, Landmark
 from multiagent.scenario import BaseScenario
 
-PREY_CAN_SEE_COMMS = False
 
 class CryptoAgent(Agent):
     def __init__(self):
@@ -10,14 +12,27 @@ class CryptoAgent(Agent):
         self.key = None
 
 class Scenario(BaseScenario):
+
+    def __init__(self, adversary_blindness='1', comm_setting='2', num_good_agents='1', num_adversaries='4', num_comms='4'):
+        super(Scenario).__init__()
+        self.adversary_blindness = int(adversary_blindness)
+        self.comm_setting = int(comm_setting)
+        self.num_good_agents = int(num_good_agents)
+        self.num_adversaries = int(num_adversaries)
+        self.num_comms = int(num_comms)
+
+
     def make_world(self):
+        """
+        adversary_blindness: 0: can see everything, 1: can't see prey, 2: can't see prey or other predators
+        comm_setting: 0: no comms, 1: everyone can see comms, 2: only predators can see comms
+        """
         world = World()
         # set any world properties first
-        world.dim_c = 4
-        #world.damping = 1
-        num_good_agents = 1
-        num_adversaries = 4
-        num_agents = num_adversaries + num_good_agents
+        world.comms_enabled = self.comm_setting > 0
+        world.dim_c = self.num_comms
+        # world.damping = 1
+        num_agents = self.num_adversaries + self.num_good_agents
         num_landmarks = 0
         num_food = 0
         num_forests = 0
@@ -28,7 +43,7 @@ class Scenario(BaseScenario):
             agent.collide = True
             agent.leader = True if i == 0 else False
             agent.silent = True if i > 0 else False
-            agent.adversary = True if i < num_adversaries else False
+            agent.adversary = True if i < self.num_adversaries else False
             agent.size = 0.075 if agent.adversary else 0.045
             agent.accel = 3.0 if agent.adversary else 4.0
             #agent.accel = 20.0 if agent.adversary else 25.0
@@ -191,7 +206,6 @@ class Scenario(BaseScenario):
         return rew
 
     def adversary_reward(self, agent, world):
-        # Agents are rewarded based on minimum agent distance to each landmark
         rew = 0
         shape = True
         agents = self.good_agents(world)
@@ -206,28 +220,28 @@ class Scenario(BaseScenario):
         return rew
 
 
-    def observation2(self, agent, world):
-        # get positions of all entities in this agent's reference frame
-        entity_pos = []
-        for entity in world.landmarks:
-            if not entity.boundary:
-                entity_pos.append(entity.state.p_pos - agent.state.p_pos)
+    # def observation2(self, agent, world):
+    #     # get positions of all entities in this agent's reference frame
+    #     entity_pos = []
+    #     for entity in world.landmarks:
+    #         if not entity.boundary:
+    #             entity_pos.append(entity.state.p_pos - agent.state.p_pos)
 
-        food_pos = []
-        for entity in world.food:
-            if not entity.boundary:
-                food_pos.append(entity.state.p_pos - agent.state.p_pos)
-        # communication of all other agents
-        comm = []
-        other_pos = []
-        other_vel = []
-        for other in world.agents:
-            if other is agent: continue
-            comm.append(other.state.c)
-            other_pos.append(other.state.p_pos - agent.state.p_pos)
-            if not other.adversary:
-                other_vel.append(other.state.p_vel)
-        return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
+    #     food_pos = []
+    #     for entity in world.food:
+    #         if not entity.boundary:
+    #             food_pos.append(entity.state.p_pos - agent.state.p_pos)
+    #     # communication of all other agents
+    #     comm = []
+    #     other_pos = []
+    #     other_vel = []
+    #     for other in world.agents:
+    #         if other is agent: continue
+    #         comm.append(other.state.c)
+    #         other_pos.append(other.state.p_pos - agent.state.p_pos)
+    #         if not other.adversary:
+    #             other_vel.append(other.state.p_vel)
+    #     return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
 
     def observation(self, agent, world):
         # get positions of all entities in this agent's reference frame
@@ -236,39 +250,24 @@ class Scenario(BaseScenario):
             if not entity.boundary:
                 entity_pos.append(entity.state.p_pos - agent.state.p_pos)
 
-        in_forest = [np.array([-1]), np.array([-1])]
-        inf1 = False
-        inf2 = False
-        # if self.is_collision(agent, world.forests[0]):
-        #     in_forest[0] = np.array([1])
-        #     inf1= True
-        # if self.is_collision(agent, world.forests[1]):
-        #     in_forest[1] = np.array([1])
-        #     inf2 = True
-
         food_pos = []
         for entity in world.food:
             if not entity.boundary:
                 food_pos.append(entity.state.p_pos - agent.state.p_pos)
+
         # communication of all other agents
         comm = []
         other_pos = []
+        other_adversary_pos = []
         other_vel = []
         for other in world.agents:
             if other is agent: continue
             comm.append(other.state.c)
-            oth_f1 = False
-            oth_f2 = False
-            # oth_f1 = self.is_collision(other, world.forests[0])
-            # oth_f2 = self.is_collision(other, world.forests[1])
-            if (inf1 and oth_f1) or (inf2 and oth_f2) or (not inf1 and not oth_f1 and not inf2 and not oth_f2) or agent.leader:  #without forest vis
-                other_pos.append(other.state.p_pos - agent.state.p_pos)
-                if not other.adversary:
-                    other_vel.append(other.state.p_vel)
-            else:
-                other_pos.append([0, 0])
-                if not other.adversary:
-                    other_vel.append([0, 0])
+            other_pos.append(other.state.p_pos - agent.state.p_pos)
+            if other.adversary:
+                other_adversary_pos.append(other.state.p_pos - agent.state.p_pos)
+            if not other.adversary:
+                other_vel.append(other.state.p_vel)
 
         if world.agents[2].key is None:
             confer = np.array([1])
@@ -277,33 +276,23 @@ class Scenario(BaseScenario):
         else:
             key = world.agents[2].key
 
-        # to tell the pred when the prey are in the forest
-        prey_forest = []
-        ga = self.good_agents(world)
-        for a in ga:
-            if any([self.is_collision(a, f) for f in world.forests]):
-                prey_forest.append(np.array([1]))
-            else:
-                prey_forest.append(np.array([-1]))
-        # to tell leader when pred are in forest
-        prey_forest_lead = []
-        for f in world.forests:
-            if any([self.is_collision(a, f) for a in ga]):
-                prey_forest_lead.append(np.array([1]))
-            else:
-                prey_forest_lead.append(np.array([-1]))
+        comm = [world.agents[0].state.c] if self.comm_setting > 0 else []
 
-        comm = [world.agents[0].state.c]
+        key_comm = [key] + comm if self.comm_setting > 0 else []
 
         if agent.adversary and not agent.leader:
-            return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + [key] + entity_pos + other_pos + other_vel + in_forest + comm)
+            if self.adversary_blindness == 0:
+                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel + key_comm)
+            elif self.adversary_blindness == 1:
+                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_adversary_pos + key_comm)
+            elif self.adversary_blindness == 2:
+                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + key_comm)
         if agent.leader:
-            return np.concatenate(
-                [agent.state.p_vel] + [agent.state.p_pos] + [key] + entity_pos + other_pos + other_vel + in_forest + comm)
+            return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + [key] + entity_pos + other_pos + other_vel + key_comm)
         else:
-            if PREY_CAN_SEE_COMMS:
-                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + [key] + entity_pos + other_pos + in_forest + other_vel)
+            if self.comm_setting == 1:
+                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel + comm)
             else:
-                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + in_forest + other_vel)
+                return np.concatenate([agent.state.p_vel] + [agent.state.p_pos] + entity_pos + other_pos + other_vel)
 
 

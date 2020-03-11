@@ -52,7 +52,11 @@ def make_env(scenario_name, arglist, benchmark=False):
     import multiagent.scenarios as scenarios
 
     # load scenario from script
-    scenario = scenarios.load(scenario_name + ".py").Scenario()
+    # scenario = scenarios.load(scenario_name + ".py").Scenario()
+
+    # create scenario
+    scenario = scenarios.make_scenario(scenario_name)
+
     # create world
     world = scenario.make_world()
     # create multiagent environment
@@ -202,4 +206,6 @@ def train(arglist):
 if __name__ == '__main__':
     arglist = parse_args()
     arglist.save_dir = os.path.join(arglist.save_dir, arglist.scenario + '-' + arglist.exp_name + '/')
+    # if not os.path.exists(arglist.save_dir):
+    #     os.mkdir(arglist.save_dir)
     train(arglist)

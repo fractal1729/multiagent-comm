@@ -198,6 +198,7 @@ class MultiAgentEnv(gym.Env):
 
     # render environment
     def render(self, mode='human'):
+        comm = 'N/A' # for rendering
         if mode == 'human':
             alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
             message = ''
@@ -209,6 +210,8 @@ class MultiAgentEnv(gym.Env):
                         word = '_'
                     else:
                         word = alphabet[np.argmax(other.state.c)]
+                        if self.world.comms_enabled:
+                            comm = word
                     message += (other.name + ' to ' + agent.name + ': ' + word + '   ')
             print(message)
 
@@ -257,6 +260,10 @@ class MultiAgentEnv(gym.Env):
             # update geometry positions
             for e, entity in enumerate(self.world.entities):
                 self.render_geoms_xform[e].set_translation(*entity.state.p_pos)
+
+            # set comm
+            self.viewers[i].set_comm(comm)
+
             # render to display or array
             results.append(self.viewers[i].render(return_rgb_array = mode=='rgb_array'))
 
