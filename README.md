@@ -14,7 +14,7 @@ Our additions include two complex cooperative/competitive environments involving
 * `multiagent/scenarios/commplex_tag.py`. Predators are given communication abilities in `simple_tag` but have vision restricted and the environment becomes partially observable.
 
 <p align="center">
-<kbd><img src="./img/adversary-sl.png" alt="Adversary speaker-listener environment" width="600" ></kbd>
+<kbd><img src="./img/adversary-sl.png" alt="Adversary speaker-listener environment" width="450" ></kbd>
 </p>
 
 <p align="center">
