@@ -4,7 +4,7 @@ This is the repository of Mihir Patel, Nikhil Sardana, and Vinjai Vale for our C
 
 This project is an exploration of communication in multi-agent reinforcement learning. We mostly considered the performance and behavior of the [MADDPG algorithm](https://arxiv.org/abs/1706.02275) in more complex environments, along with the parameterization of communication. Hence, this codebase is forked from [openai/maddpg](https://github.com/openai/maddpg) and [openai/multiagent-particle-comms](https://github.com/openai/multiagent-particle-envs).
 
-To set up this repository, please see the instructions in [`ENVIRONMENT.MD`](https://github.com/fractal1729/multiagent-comm/blob/master/ENVIRONMENT.md). This is the README from the Multi-Agent Particle Environment repository.
+To set up this repository, please see the instructions in [`ENVIRONMENT.md`](https://github.com/fractal1729/multiagent-comm/blob/master/ENVIRONMENT.md). This is the README from the Multi-Agent Particle Environment repository.
 
 
 Our additions include two complex cooperative/competitive environments involving communication. These are:
@@ -14,7 +14,7 @@ Our additions include two complex cooperative/competitive environments involving
 * `multiagent/scenarios/commplex_tag.py`. Predators are given communication abilities in `simple_tag` but have vision restricted and the environment becomes partially observable.
 
 <p align="center">
-<kbd><img src="./img/adversary-sl.png" alt="Adversary speaker-listener environment"></kbd>
+<kbd><img src="./img/adversary-sl.png" alt="Adversary speaker-listener environment" width="600" ></kbd>
 </p>
 
 <p align="center">
