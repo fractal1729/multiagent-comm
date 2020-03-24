@@ -82,7 +82,7 @@ def get_trainers(env, num_adversaries, obs_shape_n, arglist):
 
 
 def train(arglist):
-    with U.single_threaded_session():
+    with U.single_threaded_session() as sess:
         # Create environment
         env = make_env(arglist.scenario, arglist, arglist.benchmark)
         # Create agent trainers
@@ -93,6 +93,7 @@ def train(arglist):
 
         # Initialize
         U.initialize()
+        writer = tf.summary.FileWriter('logs', sess.graph)
 
         # Load previous results, if necessary
         if arglist.load_dir == "":
