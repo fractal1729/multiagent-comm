@@ -1,2 +1,5 @@
 you cannot use this code no matter what.
 don't even look at it.
+
+This software uses Multi-Agent Deep Deterministic Policy Gradient (MADDPG) software. See https://github.com/openai/maddpg/blob/master/LICENSE.txt.
+This software uses Multi-Agent Particle Environment software. See https://github.com/openai/multiagent-particle-envs/blob/master/LICENSE.txt.

@@ -32,6 +32,7 @@ def parse_args():
     # Evaluation
     parser.add_argument("--restore", action="store_true", default=False)
     parser.add_argument("--display", action="store_true", default=False)
+    parser.add_argument("--count-comms", action="store_true", default=False)
     parser.add_argument("--benchmark", action="store_true", default=False)
     parser.add_argument("--benchmark-iters", type=int, default=100000, help="number of iterations run for benchmarking")
     parser.add_argument("--benchmark-dir", type=str, default="./benchmark_files/", help="directory where benchmark data is saved")
@@ -98,7 +99,7 @@ def train(arglist):
         # Load previous results, if necessary
         if arglist.load_dir == "":
             arglist.load_dir = arglist.save_dir
-        if arglist.display or arglist.restore or arglist.benchmark:
+        if arglist.display or arglist.restore or arglist.benchmark or arglist.count_comms:
             print('Loading previous state...')
             U.load_state(arglist.load_dir)
 
@@ -107,6 +108,7 @@ def train(arglist):
         final_ep_rewards = []  # sum of rewards for training curve
         final_ep_ag_rewards = []  # agent rewards for training curve
         agent_info = [[[]]]  # placeholder for benchmarking info
+        comm_frequencies = [0] * env.world.dim_c
         saver = tf.train.Saver()
         obs_n = env.reset()
         episode_step = 0
@@ -159,6 +161,16 @@ def train(arglist):
                 time.sleep(0.1)
                 env.render()
                 continue
+
+            if arglist.count_comms:
+                comm = env.get_comm_index()
+                if comm > -1:
+                    comm_frequencies[comm] += 1
+                if train_step >= 1000:
+                    file_name = arglist.plots_dir + arglist.scenario + '-' + arglist.exp_name + '_commcounts.pkl'
+                    with open(file_name, 'wb') as fp:
+                        pickle.dump(comm_frequencies, fp)
+                    break
 
             # update all trainers, if not in display or benchmark mode
             loss = None

@@ -1,3 +1,9 @@
+# Adversarial agent added to speaker/listener environment.
+# There are multiple options. You can either have the adversary recieve noise, 
+# noisy communication, or just clear communication (lines ~160).
+# You can also restrict the landmark locations to the corners (line 86), 
+# and the agents to start in the center of the map (line 81).
+
 import numpy as np
 from multiagent.core import World, Agent, Landmark
 from multiagent.scenario import BaseScenario
@@ -6,8 +12,9 @@ class Scenario(BaseScenario):
     def make_world(self):
         world = World()
         # set any world properties first
-        world.dim_c = 3
+        world.dim_c = 5
         num_landmarks = 3
+        world.comms_enabled = True
         # world.collaborative = True
         # add agents
         world.agents = [Agent() for i in range(3)]
@@ -66,13 +73,18 @@ class Scenario(BaseScenario):
 
         world.agents[0].key = np.random.choice(world.landmarks).color
 
+        landmarklocs = [[-0.9, 0.9], [0.9, 0.9], [-0.9, -0.9], [0.9, -0.9]]
+        locs = np.random.choice(4, 3, replace=False)
+
         # set random initial states
         for agent in world.agents:
-            agent.state.p_pos = np.random.uniform(-1,+1, world.dim_p)
+            #agent.state.p_pos = np.random.uniform(-0.1,0.1, world.dim_p)
+            agent.state.p_pos = np.random.uniform(-1,+1, world.dim_p) # Comment out and use above line if you want agents to start in the center.
             agent.state.p_vel = np.zeros(world.dim_p)
             agent.state.c = np.zeros(world.dim_c)
         for i, landmark in enumerate(world.landmarks):
-            landmark.state.p_pos = np.random.uniform(-1,+1, world.dim_p)
+            #landmark.state.p_pos = np.asarray(landmarklocs[locs[i]])
+            landmark.state.p_pos = np.random.uniform(-1,+1, world.dim_p) # Comment out and use above line if you want landmarks to be restricted to map corners.
             landmark.state.p_vel = np.zeros(world.dim_p)
 
     def benchmark_data(self, agent, world):
@@ -82,8 +94,6 @@ class Scenario(BaseScenario):
     def reward(self, agent, world):
         if agent.adversary:
             return self.adversary_reward(agent, world)
-        #elif agent.speaker:
-        #    return self.speaker_reward(agent, world)
         else:
             return self.speaker_reward(agent, world)
 
@@ -113,7 +123,6 @@ class Scenario(BaseScenario):
         goal_color = np.zeros(world.dim_color)
         if agent.goal_b is not None:
             goal_color = agent.goal_b.color
-
         # get positions of all entities in this agent's reference frame
         entity_pos = []
         for entity in world.landmarks:
@@ -127,11 +136,10 @@ class Scenario(BaseScenario):
         
         if world.agents[0].key is None:
             confer = np.array([1])
-            key = np.zeros(world.dim_c)
-            goal_color = np.zeros(world.dim_c)
+            key = np.zeros(3)
+            goal_color = np.zeros(3)
         else:
             key = world.agents[0].key
-
 
         # speaker
         if not agent.movable:
@@ -141,5 +149,18 @@ class Scenario(BaseScenario):
             return np.concatenate([agent.state.p_vel] + entity_pos + [key] + comm)
         # adversary
         elif agent.silent:
+            noiseamount = 1.0 # change parameter to smaller for less noisy, larger for noisier.
+            noisycomm = []
+            for c in comm:
+                nc = np.random.randn(*c.shape) * noiseamount
+                noisycomm.append(nc)
+                #noisycomm.append(nc + c)	# Use this instead of the above line if you want the adversary to 
+                							# recieve noisy communication instead of just pure noise
+
             return np.concatenate([agent.state.p_vel] + entity_pos + comm)
+            # return np.concatenate([agent.state.p_vel] + entity_pos + noisycomm)	# Use this instead of the above line
+            																		# if instead you want the adversary to
+            																		# recieve noisy communication, instead
+            																		# of clear communication.
+
                   
