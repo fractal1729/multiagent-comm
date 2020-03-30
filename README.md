@@ -1,6 +1,6 @@
 # multiagent-comm
 
-This is the repository of Mihir Patel, Nikhil Sardana, and Vinjai Vale for our CS 234 (Reinforcement Learning) final project, "Multi-Agent Cooperation Against Adversarial Agents Through Communication."
+This is the repository of Mihir Patel, Nikhil Sardana, and Vinjai Vale for our CS 234 (Reinforcement Learning) final project, "Multi-Agent Cooperation Against Adversarial Agents Through Communication." The final report is available [here](https://nikhilsardana.github.io/multiagentcomm.pdf).
 
 This project is an exploration of communication in multi-agent reinforcement learning. We mostly considered the performance and behavior of the [MADDPG algorithm](https://arxiv.org/abs/1706.02275) in more complex environments, along with the parameterization of communication. Hence, this codebase is forked from [openai/maddpg](https://github.com/openai/maddpg) and [openai/multiagent-particle-envs](https://github.com/openai/multiagent-particle-envs).
 
